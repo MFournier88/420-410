@@ -8,14 +8,15 @@ weight = 21
 
 ### UDP
 
-Créez un **serveur** UDP sur votre PI qui s'attend à recevoir l'une des trois commandes suivante: `allume`, `ferme`, `exit`.
+1. Créez un **serveur** UDP sur votre PI qui s'attend à recevoir l'une des trois commandes suivante: `allume`, `ferme`, `exit`.
 
-- `allume` : Allume une led
+- `allume` : Allume une led RGB avec une couleur aléatoire à chaque fois (PWM). Si la lumière est déjà allumé, ne fait rien.
 - `ferme` : Éteint la led
 - `exit` : S'assure de fermer la led et de bien fermer le serveur.
 
 Créez ensuite le **client** UDP sur votre ordinateur (pas le Pi). Le client doit pouvoir envoyer ces trois messages. 
 
+2. En équipe de deux, reproduiser l'exercices : `Exercice 2 : Machine à états et gestion d’un bouton-poussoir` mais avec le bouton sur un pi et la lumière sur le 2e pi.
 
 ### TCP
 

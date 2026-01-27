@@ -6,4 +6,9 @@ draft = false
 pre = "7. "
 +++
 
-Dans cette section nous verrons comment utiliser un écran LCD.
+# Random
+
+```python
+import random
+random.randint(0, 255)
+```
