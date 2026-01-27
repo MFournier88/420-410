@@ -5,19 +5,49 @@ weight = 20
 draft = false
 +++
 
-Pour établir une communication entre un Raspberry Pi et un autre hôte sur le réseau, on peut adopter l'approche client-serveur: 
-+ Le _serveur_ est celui qui reçoit les messages
-+ Le _client_ est celui qui envoit les messages
+---
 
-Le Raspberry Pi peut être n'importe lequel des deux. 
+## Protocoles de communication : TCP vs UDP
 
-Deux protocoles réseau peuvent être utilisés pour envoyer des messages entre un client et un serveur, soit _TCP_ et _UDP_.
-+ TCP: une connexion est établie entre client et serveur. Cette connexion est ensuite utilisée pour que les deux s'échangent des messages. Lorsqu'un des deux termine la connexion, celle-ci est fermée.
-+ UDP: le client envoit des messages au serveur sans établir de connexion préalable. Il n'est donc pas possible de savoir si le serveur est en ligne et prêt à recevoir les messages.
+Pour établir une communication entre un Raspberry Pi et un autre hôte, on utilise l'approche **client-serveur**. La distinction entre les deux repose sur l'initiative de la communication :
 
-Pour communiquer en utilisant TCP ou UDP, il faut utiliser les _sockets_.
+* Le **serveur** est celui qui se prépare à recevoir : il "écoute" sur un port spécifique.
+* Le **client** est celui qui initie la communication : il s'adresse à l'adresse IP et au port du serveur.
 
-Un socket représente le point terminal d'une communication entre deux hôtes sur un réseau. Il peut être la source ou la destination d'un message. Les sockets sont définis par une adresse IP et un port et sont utilisés par les programmes pour envoyer et recevoir des messages.
+### 1. TCP (Transmission Control Protocol) : Le mode connecté
+
+TCP est comparable à un **appel téléphonique**. Une ligne est établie avant que l'échange ne commence.
+
+* **Connexion :** Une connexion est établie (Handshake) entre le client et le serveur.
+* **Fiabilité :** Le protocole vérifie que chaque message est bien arrivé. Si un paquet est perdu, il est renvoyé.
+* **Ordre :** Les messages arrivent exactement dans l'ordre où ils ont été envoyés.
+* **Clôture :** La connexion doit être explicitement fermée par l'un des deux hôtes.
+
+### 2. UDP (User Datagram Protocol) : Le mode non-connecté
+
+UDP est comparable à **l'envoi de lettres par la poste**. On envoie un paquet sans savoir si le destinataire est présent.
+
+* **Pas de connexion :** Le client envoie des messages au serveur sans établir de liaison préalable.
+* **Rapidité :** Il n'y a pas de vérification de réception, ce qui le rend beaucoup plus léger et rapide.
+* **Incertitude :** On ne peut pas savoir si le serveur est en ligne ou s'il a bien reçu le message. Si un message est perdu, il est perdu pour de bon.
+
+---
+
+### Les Sockets : le point d'entrée
+
+Pour utiliser ces protocoles, on utilise des **sockets**.
+
+Un socket représente le point terminal d'une communication. C'est la "prise" sur laquelle ton programme se branche pour envoyer ou recevoir des données. Un socket est défini par deux éléments :
+
+1. **Une adresse IP** (pour trouver l'hôte sur le réseau).
+2. **Un port** (pour trouver le programme spécifique sur cet hôte).
+
+| Type de Socket | Protocole associé | Constante Python |
+| --- | --- | --- |
+| **Stream Socket** | TCP | `socket.SOCK_STREAM` |
+| **Datagram Socket** | UDP | `socket.SOCK_DGRAM` |
+
+---
 
 ## Client
 #### UDP
