@@ -102,6 +102,22 @@ sudo systemctl start pigpiod
 sudo systemctl enable pigpiod
 ```
 
+Si vous avez des problèmes avec pigpio :
+```bash
+sudo apt update
+sudo apt upgrade
+sudo apt install python3-pigpio
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
+sudo cp util/pigpiod.service /lib/systemd/system
+sudo ln -s /usr/local/bin/pigpiod /usr/bin/pigpiod
+sudo systemctl enable pigpiod
+sudo systemctl daemon-reload
+sudo systemctl start pigpiod
+```
 Dans le programme suivant un courant de 3.3V  est envoyé durant 1 seconde sur la broche 11 du Pi (qui correspond à l'identifiant GPIO `17` dans _pigpio_):
 
 ```python
