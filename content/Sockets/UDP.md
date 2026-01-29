@@ -51,8 +51,6 @@ import socket
 
 PORT = 8888
 BUFFER_SIZE = 1024
-    # Décodage binaire -> texte
-    message = buffer.decode()
 
 
 # Créer le socket

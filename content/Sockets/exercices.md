@@ -20,11 +20,14 @@ Créez ensuite le **client** UDP sur votre ordinateur (pas le Pi). Le client doi
 
 ### TCP
 
-1. Faites deux programmes (`serveur1.py` et `client1.py`) ayant les mêmes fonctionnalités que celui de l'exercice précédent, mais en utilisant une connexion TCP. Au message _exit_, la connexion TCP est fermée des deux côtés.
+1. Faites deux programmes (`serveur1.py` et `client1.py`) ayant les mêmes fonctionnalités que celui de l'exercice 1 - UDP, mais en utilisant une connexion TCP. Au message _exit_, la connexion TCP est fermée des deux côtés.
 {{% expand "Solution" %}}
 client1.py
 ```python
-import socket
+# Coming soon
+```
+
+<!-- import socket
 
 PORT = 9090
 DEST_IP = "10.10.20.245"
@@ -40,11 +43,13 @@ while True:
     if message == "exit":
         break
 
-sock.close()
-```
+sock.close() -->
 serveur1.py
 ```python
-import socket
+# Coming soon
+```
+
+<!-- import socket
 import pigpio
 
 LED_PIN = 17
@@ -79,13 +84,16 @@ while True:
             break
 
 socket_desc.close()
-socket_local.close()
-```
+socket_local.close() -->
 {{% /expand %}}
 2. Ajoutez le fonctionnalité suivante: le serveur répond "OK" au client si la commande est _allume_, _ferme_ ou _exit_ ou "ERR" autrement (`serveur2.py` et `client2.py`).
 {{% expand "Solution" %}}
 client2.py
 ```python
+# Coming soon
+```
+
+<!-- 
 import socket
 
 PORT = 9090
@@ -109,10 +117,13 @@ while True:
     if message == "exit":
         break
 
-sock.close()
-```
+sock.close() -->
 serveur2.py
 ```python
+# Coming soon
+```
+
+<!-- 
 import socket
 import pigpio
 
@@ -158,12 +169,16 @@ while True:
         
 socket_desc.close()
 socket_local.close()
-```
+ -->
 {{% /expand %}}
 3. Modifiez votre programme: lorsque le client envoit _exit_, la connexion TCP est terminée, le client se termine, mais le serveur continue à attendre d'autres connexions TCP (`serveur3.py` et `client3.py`).
 {{% expand "Solution" %}}
 client3.py
 ```python
+# Coming soon
+```
+
+<!-- 
 import socket
 
 PORT = 9090
@@ -187,9 +202,13 @@ while True:
     if message == "exit":
         break
 
-sock.close()
-```
+sock.close() -->
 serveur3.py
+
+```python
+# Coming soon
+```
+<!-- 
 ```python
 import socket
 import pigpio
@@ -235,11 +254,16 @@ while True:
 
     # Fermer la connexion
     socket_desc.close()
-```
+``` -->
 {{% /expand %}}
-4. Ajoutez une 2e LED sur votre Pi. Modifiez le programme serveur pour que les commandes envoyées permettent de spécifier laquelle des 2 LED allumer (les messages "led1" et "led2" doivent être envoyés au serveur pour qu'il sache quelle LED allumer ou éteindre). Le programme client n'a pas besoin d'être modifié. Les messages possibles du client sont donc: `led1, led2, allume, ferme, exit`. Les messages du serveur sont `OK, ERR, BYE`.
+4. Ajoutez une 2e LED sur votre Pi. Modifiez le programme serveur pour que les commandes envoyées permettent de spécifier laquelle des 2 LED allumer (les messages "led1" et "led2" doivent être envoyés au serveur pour qu'il sache quelle LED allumer ou éteindre). Le programme client n'a pas besoin d'être modifié. Les messages possibles du client sont donc: `led1, led2, allume, ferme, exit`. Les messages du serveur sont `OK, ERR, BYE`. La led1 s'allume vert et la led2 s'allume bleu.
 {{% expand "Solution" %}}
 serveur4.py
+
+```python
+# Coming soon
+```
+<!-- 
 ```python
 import socket
 import pigpio
@@ -296,6 +320,6 @@ while True:
 
     # Fermer la connexion
     socket_desc.close()
-```
+``` -->
 {{% /expand %}}
 
