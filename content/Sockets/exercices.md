@@ -134,7 +134,7 @@ client.py
 ```python
 import socket
 import pigpio
-import time
+import time 
 
 pi = pigpio.pi()
 
