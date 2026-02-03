@@ -16,7 +16,273 @@ weight = 21
 
 Créez ensuite le **client** UDP sur votre ordinateur (pas le Pi). Le client doit pouvoir envoyer ces trois messages. 
 
+
+{{% expand "Solution" %}}
+client.py
+```python
+import socket
+
+PORT = 8888
+DEST_IP = "127.0.0.1"
+
+# Créer le socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Créer un objet pour l'adresse
+dest_addr = (DEST_IP, PORT)
+
+try:
+    while True:
+        message = input(f"Envoyer un message à {DEST_IP} : ")
+        # Envoyer le message
+        sock.sendto(message.encode(), dest_addr)
+        if message == "exit":
+            break
+    # Fermer le socket
+except KeyboardInterrupt:
+    pass
+finally:
+    sock.close()
+```
+
+serveur.py
+```python
+import pigpio
+import time
+import socket
+import random
+
+PORT = 8888
+BUFFER_SIZE = 1024
+
+pi = pigpio.pi()
+
+pinB = 22
+pinR = 26
+pinG = 17
+
+BTN = 4
+
+pi.set_mode(pinB,pigpio.OUTPUT)
+pi.set_mode(pinR,pigpio.OUTPUT)
+pi.set_mode(pinG,pigpio.OUTPUT)
+
+pi.set_mode(BTN, pigpio.INPUT)
+
+
+pi.write(pinB, 1)
+pi.write(pinR, 1)
+pi.write(pinG, 1)
+
+# Créer le socket
+socket_local = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+adr_local = ('', PORT)
+
+# Lier le socket à l'adresse
+socket_local.bind(adr_local)
+
+print(f"On attend les messages UDP entrants au port {PORT}...")
+
+lastState = "ferme"
+
+try:
+    # Réception des messages
+    while True:
+        # Réception des données
+        buffer, adr_dist = socket_local.recvfrom(BUFFER_SIZE)
+        
+        # Décodage binaire -> texte
+        message = buffer.decode()
+
+        print(f"Message reçu: {message}")
+
+        print(f"LastState reçu: {lastState}")
+
+        match message.strip():
+            case "allume":
+                if lastState == "ferme":
+                    pi.set_PWM_dutycycle(pinR, random.randint(0, 255))
+                    pi.set_PWM_dutycycle(pinB, random.randint(0, 255))
+                    pi.set_PWM_dutycycle(pinG, random.randint(0, 255))
+                    lastState = "allume"
+            case "ferme":
+                pi.write(pinB,1)
+                pi.write(pinR,1)
+                pi.write(pinG,1)
+                lastState = "ferme"
+            case "exit":
+                break
+except KeyboardInterrupt:
+    print("Programme arrêté")
+finally:
+    pi.write(pinB,1)
+    pi.write(pinR,1)
+    pi.write(pinG,1)
+
+    pi.stop()
+
+    socket_local.close()
+
+    print("Bye Bye")
+```
+{{% /expand %}}
+
 2. En équipe de deux, reproduiser l'exercices : `Exercice 2 : Machine à états et gestion d’un bouton-poussoir` mais avec le bouton sur un pi et la lumière sur le 2e pi.
+
+{{% expand "Solution" %}}
+client.py
+```python
+import socket
+import pigpio
+import time
+
+pi = pigpio.pi()
+
+
+
+BTN = 4
+
+etat = -1
+prev = -1
+
+PORT = 8888
+DEST_IP = "127.0.0.1"
+
+
+# Créer le socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Créer un objet pour l'adresse
+dest_addr = (DEST_IP, PORT)
+NIVEAU_ROBUSTESSE = 5
+try:
+  
+    while True:
+        while True:
+            etat = pi.read(BTN)
+            # print(etat)
+            if etat != prev:
+                somme = 0
+                isNew = True
+                for i in range(NIVEAU_ROBUSTESSE):
+                    if pi.read(BTN) != etat:
+                        isNew = False
+                        break
+                    time.sleep(0.01)
+                if isNew: 
+                    prev = etat
+                    if etat == 0:
+                        print("click")
+                        sock.sendto("click".encode(), dest_addr)       
+            time.sleep(0.02)
+    
+except KeyboardInterrupt:
+    print("Au revoir!")
+
+finally:
+    # Envoi avis de fermeture au serveur
+    sock.sendto("exit".encode(), dest_addr)
+    # Cleanup
+    sock.close()
+    pi.stop()
+```
+
+serveur.py
+```python
+import pigpio
+import time
+import socket
+import random
+
+PORT = 8888
+BUFFER_SIZE = 1024
+
+#pigpio - setup
+pi = pigpio.pi()
+
+pinB = 22
+pinR = 26
+pinG = 17
+
+BTN = 4
+
+pi.set_mode(pinB,pigpio.OUTPUT)
+pi.set_mode(pinR,pigpio.OUTPUT)
+pi.set_mode(pinG,pigpio.OUTPUT)
+
+pi.set_mode(BTN, pigpio.INPUT)
+
+
+pi.write(pinB, 1)
+pi.write(pinR, 1)
+pi.write(pinG, 1)
+
+
+
+class EtatLed:
+    def __init__(self, next, pin, pi):
+        self.pi = pi
+        self.next = next
+        self.pin = pin
+    def allume(self):
+        self.pi.write(self.pin, 0)
+    def eteint(self):
+        self.pi.write(self.pin, 1)
+
+class EtatEteint(EtatLed):
+    def allume(self):
+        pass
+    def eteint(self):
+        pass
+
+eteint = EtatEteint(None, 0, pi)
+ledG   = EtatLed(eteint, pinG, pi)
+ledB   = EtatLed(ledG, pinB, pi)
+ledR   = EtatLed(ledB, pinR, pi)
+eteint.next = ledR
+
+
+# Créer le socket
+socket_local = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+adr_local = ('', PORT)
+
+# Lier le socket à l'adresse
+socket_local.bind(adr_local)
+
+print(f"On attend les messages UDP entrants au port {PORT}...")
+
+led = eteint
+try:
+    # Réception des messages
+    while True:
+        # Réception des données
+        buffer, adr_dist = socket_local.recvfrom(BUFFER_SIZE)
+        
+        # Décodage binaire -> texte
+        message = buffer.decode().strip()
+
+        print(f"Message reçu: {message}")
+
+        if message == "click":
+            led.eteint()
+            led = led.next
+            led.allume()
+        elif message == "exit":
+            break
+        else:
+            print("Erreur")
+except KeyboardInterrupt:
+    pass
+finally:
+    pi.write(pinR, 1)
+    pi.write(pinB, 1)
+    pi.write(pinG, 1)
+
+    socket_local.close()
+    pi.stop()
+    print("\nBye bye")
+```
+{{% /expand %}}
 
 ### TCP
 
@@ -24,68 +290,125 @@ Créez ensuite le **client** UDP sur votre ordinateur (pas le Pi). Le client doi
 {{% expand "Solution" %}}
 client1.py
 ```python
-# Coming soon
-```
+import socket
 
-<!-- import socket
+PORT = 8888
+DEST_IP = ""
+MESSAGE = "abcdefg!\n"
 
-PORT = 9090
-DEST_IP = "10.10.20.245"
-
+# Create the socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Initialize the destination address
 dest_addr = (DEST_IP, PORT)
+
+# Create the connection
 sock.connect(dest_addr)
 
-while True:
-    message = input("> ")
-    sock.send(message.encode() + b'\n')
-    
-    if message == "exit":
-        break
+try:
+    while True:
+        message = input(f"Envoyer un message à {DEST_IP} : ") + "\n"
 
-sock.close() -->
-serveur1.py
-```python
-# Coming soon
+        
+        
+        # Envoyer le message
+        sock.send(message.encode())
+        if message.strip() == "exit":
+            break
+except KeyboardInterrupt:
+    pass
+finally:
+    print("Au revoir!")
+    # Fermer le socket
+    sock.close()
 ```
 
-<!-- import socket
+serveur1.py
+```python
 import pigpio
+import time
+import socket
+import random
 
-LED_PIN = 17
-PORT = 9090
+PORT = 8888
 BUFFER_SIZE = 1024
 
 pi = pigpio.pi()
 
+pinB = 22
+pinR = 26
+pinG = 17
+
+BTN = 4
+
+pi.set_mode(pinB,pigpio.OUTPUT)
+pi.set_mode(pinR,pigpio.OUTPUT)
+pi.set_mode(pinG,pigpio.OUTPUT)
+
+pi.set_mode(BTN, pigpio.INPUT)
+
+
+pi.write(pinB, 1)
+pi.write(pinR, 1)
+pi.write(pinG, 1)
+
+# Créer le socket
 socket_local = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 address = ('', PORT)  
+
+# Lier le socket à l'adresse
 socket_local.bind(address)
 
+# Attendre une connexion
 socket_local.listen(3)
-print(f"Écoute au port: {PORT}...")
+print(f"Serveur TCP en écoute au port {PORT}...")
 
-socket_desc, client_address = socket_local.accept()
+socket_dist, client_address = socket_local.accept()
 print(f"Socket distant: {client_address}")
 
-while True:
-    data = socket_desc.recv(BUFFER_SIZE)
-    if data:
-        message = data.decode().strip()
-        print(f"< {message}")
-        
-        if message == "allume":
-            pi.write(LED_PIN, 1)
-        elif message == "ferme":
-            pi.write(LED_PIN, 0)
-        elif message == "exit":
-            pi.write(LED_PIN, 0)
-            pi.stop()
+lastState = "ferme"
+
+try:
+    # Réception des messages
+    while True:
+        data = socket_dist.recv(BUFFER_SIZE)
+        if not data:
+            print("Déconnecté")
             break
 
-socket_desc.close()
-socket_local.close() -->
+        match data.decode().strip():
+            case "allume":
+                if lastState == "ferme":
+                    pi.set_PWM_dutycycle(pinR, random.randint(0, 255))
+                    pi.set_PWM_dutycycle(pinB, random.randint(0, 255))
+                    pi.set_PWM_dutycycle(pinG, random.randint(0, 255))
+                    lastState = "allume"
+            case "ferme":
+                pi.write(pinB,1)
+                pi.write(pinR,1)
+                pi.write(pinG,1)
+                lastState = "ferme"
+            case "exit":
+                break
+except KeyboardInterrupt:
+    pass
+finally:
+    pi.write(pinB,1)
+    pi.write(pinR,1)
+    pi.write(pinG,1)
+
+    pi.stop()
+
+    socket_dist.close()
+    socket_local.close()
+    print("Bye Bye")
+
+
+```
+
+
 {{% /expand %}}
+
 2. Ajoutez le fonctionnalité suivante: le serveur répond "OK" au client si la commande est _allume_, _ferme_ ou _exit_ ou "ERR" autrement (`serveur2.py` et `client2.py`).
 {{% expand "Solution" %}}
 client2.py
@@ -93,83 +416,13 @@ client2.py
 # Coming soon
 ```
 
-<!-- 
-import socket
 
-PORT = 9090
-DEST_IP = "192.168.50.190"
-BUFFER_SIZE = 1024
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-dest_addr = (DEST_IP, PORT)
-sock.connect(dest_addr)
-
-while True:
-    message = input("> ")
-    sock.send(message.encode() + b'\n')
-    
-    # Réception de la réponse
-    data = sock.recv(BUFFER_SIZE)
-    if data:
-        reponse = data.decode().strip()
-        print("<",reponse)
-        
-    if message == "exit":
-        break
-
-sock.close() -->
 serveur2.py
 ```python
 # Coming soon
 ```
 
-<!-- 
-import socket
-import pigpio
 
-LED_PIN = 17
-PORT = 9090
-BUFFER_SIZE = 1024
-
-pi = pigpio.pi()
-
-socket_local = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-address = ('', PORT)  
-socket_local.bind(address)
-
-socket_local.listen(3)
-print(f"Écoute au port: {PORT}...")
-
-socket_desc, client_address = socket_local.accept()
-print(f"Socket distant: {client_address}")
-
-while True:
-    data = socket_desc.recv(BUFFER_SIZE)
-    if data:
-        message = data.decode().strip()
-        print(f"< {message}")
-        
-        reponse = "OK"
-        if message == "allume":
-            pi.write(LED_PIN, 1)
-        elif message == "ferme":
-            pi.write(LED_PIN, 0)
-        elif message == "exit":
-            pi.write(LED_PIN, 0)
-            pi.stop()
-        else:
-            reponse = "ERR"
-        
-        # Envoyer la réponse
-        socket_desc.send(reponse.encode() + b'\n')
-
-        if message == "exit":
-            pi.stop()
-            break
-        
-socket_desc.close()
-socket_local.close()
- -->
 {{% /expand %}}
 3. Modifiez votre programme: lorsque le client envoit _exit_, la connexion TCP est terminée, le client se termine, mais le serveur continue à attendre d'autres connexions TCP (`serveur3.py` et `client3.py`).
 {{% expand "Solution" %}}
