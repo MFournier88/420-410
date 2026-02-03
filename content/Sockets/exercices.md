@@ -509,7 +509,7 @@ while True:
     socket_desc.close()
 ``` -->
 {{% /expand %}}
-4. Ajoutez une 2e LED sur votre Pi. Modifiez le programme serveur pour que les commandes envoyées permettent de spécifier laquelle des 2 LED allumer (les messages "led1" et "led2" doivent être envoyés au serveur pour qu'il sache quelle LED allumer ou éteindre). Le programme client n'a pas besoin d'être modifié. Les messages possibles du client sont donc: `led1, led2, allume, ferme, exit`. Les messages du serveur sont `OK, ERR, BYE`. La led1 s'allume vert et la led2 s'allume bleu.
+4. Ajoutez une 2e LED sur votre Pi. Modifiez le programme serveur pour que les commandes envoyées permettent de spécifier laquelle des 2 LED allumer (les messages "led1" et "led2" doivent être envoyés au serveur pour qu'il sache quelle LED allumer ou éteindre). Le programme client n'a pas besoin d'être modifié. Les messages possibles du client sont donc: `led1 allume, led1 ferme, led2 allume, led2 ferme, exit`. Les messages du serveur sont `OK, ERR, BYE`. La led1 s'allume vert et la led2 s'allume bleu.
 {{% expand "Solution" %}}
 serveur4.py
 
