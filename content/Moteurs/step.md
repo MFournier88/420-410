@@ -242,7 +242,7 @@ except KeyboardInterrupt:
 {{% /expand %}}
 
 4. Faites un programme qui fait une rotation de 45 degrés, change de sens, fait 20 degrés, change encore de direction et fait 90 degrés au quart de la vitesse.
-{{% expand "Solution" %}}
+<!-- {{% expand "Solution" %}}
 ```python
 import pigpio
 import time
@@ -311,10 +311,10 @@ try:
 except KeyboardInterrupt:
     stop_moteur()
 ```
-{{% /expand %}}
+{{% /expand %}} -->
 
 5. Faites un programme qui fait 1 tour en ralentissant graduellement, change de sens, et fait un tour en revenant graduellement à la vitesse initiale. Pour la vitesse maximale, utilisez un délai de 2ms et pour la vitesse minimale, 10ms.
-{{% expand "Solution" %}}
+<!-- {{% expand "Solution" %}}
 ```python
 import pigpio
 import time
@@ -382,4 +382,4 @@ except KeyboardInterrupt:
     stop_moteur()
 ```
 {{% /expand %}}
-
+ -->
