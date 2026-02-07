@@ -242,38 +242,38 @@ except KeyboardInterrupt:
 {{% /expand %}}
 
 4. Faites un programme qui fait une rotation de 45 degrés, change de sens, fait 20 degrés, change encore de direction et fait 90 degrés au quart de la vitesse.
-<!-- {{% expand "Solution" %}}
+{{% expand "Solution" %}}
 ```python
 import pigpio
 import time
 
+STEPS_PAR_TOUR = 2048
+
+# GPIO
 M1,M2,M3,M4 = 26,13,19,6
-steps_par_degre = 5.68
 
 # Minimum recommandé: 2ms (0.002)
 step_pause = 0.002
+
+
+
+# Séquence "Full-step" = plus de couple 
+seq_full = [
+    [1,0,0,1],
+    [1,1,0,0],
+    [0,1,1,0],
+    [0,0,1,1]
+]
+
+def degree_to_steps(angle):
+    return angle / 360 * 2048
+
 
 def stop_moteur():
     pi.write(M1, 0)
     pi.write(M2, 0)
     pi.write(M3, 0)
     pi.write(M4, 0)
-
-def fullStep(pause,clockwise):
-    sequence = [[1,0,0,1],[1,1,0,0],[0,1,1,0],[0,0,1,1]]
-    if not clockwise: sequence.reverse()
-
-    for step in sequence:
-        # Activer chacune des 4 bobines
-        pi.write(M1, step[0])
-        pi.write(M2, step[1])
-        pi.write(M3, step[2])
-        pi.write(M4, step[3])
-
-        # La durée de la pause détermine la vitesse
-        time.sleep(pause)
-
-    return len(sequence)
 
 pi = pigpio.pi()
 
@@ -282,104 +282,106 @@ pi.set_mode(M2,pigpio.OUTPUT)
 pi.set_mode(M3,pigpio.OUTPUT)
 pi.set_mode(M4,pigpio.OUTPUT)
 
-n = 0
-sens_rotation = True
+angles = [45, 20, 90]
 
 try:
-    # 45 degrés
-    while n < 45 * steps_par_degre:
-        n += fullStep(step_pause,sens_rotation)
-    stop_moteur()
-    time.sleep(1)
-
-    # Inverse et 20 degrés
-    n = 0
-    sens_rotation = not sens_rotation
-    while n < 20 * steps_par_degre:
-        n += fullStep(step_pause,sens_rotation)
-    stop_moteur()
-    time.sleep(1)
+    for angle in angles:
+        compteur = 0
+        steps_to_do = degree_to_steps(angle)
+        while compteur < steps_to_do:
+            for step in seq_full: # Changez la séquence ici au besoin
+                # Activer chacune des 4 bobines
+                pi.write(M1, step[0])
+                pi.write(M2, step[1])
+                pi.write(M3, step[2])
+                pi.write(M4, step[3])
+                compteur += 1
+                # La durée de la pause détermine la vitesse
+                time.sleep(step_pause)
+        
+        seq_full.reverse()
     
-    # Inverse, 1/4 vitesse et 90 degrés
-    n = 0
-    sens_rotation = not sens_rotation
-    step_pause *= 4
-    while n < 90 * steps_par_degre:
-        n += fullStep(step_pause,sens_rotation)
-
+    
 
 except KeyboardInterrupt:
-    stop_moteur()
-```
-{{% /expand %}} -->
-
-5. Faites un programme qui fait 1 tour en ralentissant graduellement, change de sens, et fait un tour en revenant graduellement à la vitesse initiale. Pour la vitesse maximale, utilisez un délai de 2ms et pour la vitesse minimale, 10ms.
-<!-- {{% expand "Solution" %}}
-```python
-import pigpio
-import time
-
-M1,M2,M3,M4 = 26,13,19,6
-steps_par_degre = 5.68
-
-# Minimum recommandé: 2ms (0.002)
-step_pause = 0.002
-
-def stop_moteur():
-    pi.write(M1, 0)
-    pi.write(M2, 0)
-    pi.write(M3, 0)
-    pi.write(M4, 0)
-
-def fullStep(pause,clockwise):
-    sequence = [[1,0,0,1],[1,1,0,0],[0,1,1,0],[0,0,1,1]]
-    if not clockwise: sequence.reverse()
-
-    for step in sequence:
-        # Activer chacune des 4 bobines
-        pi.write(M1, step[0])
-        pi.write(M2, step[1])
-        pi.write(M3, step[2])
-        pi.write(M4, step[3])
-
-        # La durée de la pause détermine la vitesse
-        time.sleep(pause)
-
-    return len(sequence)
-
-pi = pigpio.pi()
-
-pi.set_mode(M1,pigpio.OUTPUT)
-pi.set_mode(M2,pigpio.OUTPUT)
-pi.set_mode(M3,pigpio.OUTPUT)
-pi.set_mode(M4,pigpio.OUTPUT)
-
-n = 0
-sens_rotation = True
-delai_min = 0.002
-delai_max = 0.01
-pause = delai_min
-
-try:
-    # 1 tour en ralentissant
-    while n < steps_par_tour:
-        n += fullStep(pause,sens_rotation)
-        pause += 4 * (delai_max - delai_min) / steps_par_tour
-        print(pause)
-
-    # Inverse et 1 tour en accélérant
-    n = 0
-    sens_rotation = not sens_rotation
-    while n < steps_par_tour:
-        n += fullStep(pause,sens_rotation)
-        pause -= 4 * (delai_max - delai_min) / steps_par_tour
-        print(pause)
-
+    pass
+finally:
     stop_moteur()
 
-
-except KeyboardInterrupt:
-    stop_moteur()
 ```
 {{% /expand %}}
- -->
+
+5. Faites un programme qui fait 1 tour en ralentissant graduellement, change de sens, et fait un tour en revenant graduellement à la vitesse initiale. Pour la vitesse maximale, utilisez un délai de 2ms et pour la vitesse minimale, 10ms.
+{{% expand "Solution" %}}
+```python
+import pigpio
+import time
+
+STEPS_PAR_TOUR = 2048
+
+# GPIO
+M1,M2,M3,M4 = 26,13,19,6
+
+# Minimum recommandé: 2ms (0.002)
+step_pause = 0.002
+
+
+
+# Séquence "Full-step" = plus de couple 
+seq_full = [
+    [1,0,0,1],
+    [1,1,0,0],
+    [0,1,1,0],
+    [0,0,1,1]
+]
+
+def degree_to_steps(angle):
+    return angle / 360 * 2048
+
+
+def stop_moteur():
+    pi.write(M1, 0)
+    pi.write(M2, 0)
+    pi.write(M3, 0)
+    pi.write(M4, 0)
+
+pi = pigpio.pi()
+
+pi.set_mode(M1,pigpio.OUTPUT)
+pi.set_mode(M2,pigpio.OUTPUT)
+pi.set_mode(M3,pigpio.OUTPUT)
+pi.set_mode(M4,pigpio.OUTPUT)
+
+
+steps_to_do = 2048 * 2
+compteur = 0
+sign = 1
+try:
+    while compteur < steps_to_do:
+        for step in seq_full: # Changez la séquence ici au besoin
+            # Activer chacune des 4 bobines
+            pi.write(M1, step[0])
+            pi.write(M2, step[1])
+            pi.write(M3, step[2])
+            pi.write(M4, step[3])
+            compteur += 1
+            # La durée de la pause détermine la vitesse
+            time.sleep(step_pause)
+            step_pause = step_pause + sign * 0.008 / 2048
+            print(step_pause)
+            # 0.002 -> 0.01 : Je dois augmenter de 0.008 en 2048 steps
+        if compteur == STEPS_PAR_TOUR: 
+            seq_full.reverse()
+            sign = -1
+    
+    
+
+except KeyboardInterrupt:
+    pass
+finally:
+    stop_moteur()
+
+
+```
+{{% /expand %}}
+
