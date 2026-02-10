@@ -21,7 +21,7 @@ Les messages se composent de 3 parties séparées par `:`
 - `STEP:H:90` -   Le moteur fait une rotation de 90 degrés dans le sens horaire
 
 Le programme doit pouvoir faire fonctionner le moteur et la LED en même temps, comme par exemple si le serveur reçoit `LED:60:1` et `STEP:A:720` immédiatement après. Vous devrez donc utiliser les _Threads_.
-{{% expand "Solution" %}}
+<!-- {{% expand "Solution" %}}
 ```python
 import pigpio
 import time
@@ -121,4 +121,4 @@ except KeyboardInterrupt:
     stop_moteur()
     socket_local.close()
 ```
-{{% /expand %}}
+{{% /expand %}} -->

@@ -13,8 +13,8 @@ sudo systemctl enable ssh
 sudo systemctl start ssh
 ```
 
-## Changer le nom d'hôte
-Il est possible de se connecter sur le Pi en utilisant son adresse IP, mais il est souvent plus pratique d'utiliser un nom pour y référer. Pour y arriver il faut modifier deux fichiers.
+<!-- ## Changer le nom d'hôte
+l est possible de se connecter sur le Pi en utilisant son adresse IP, mais il est souvent plus pratique d'utiliser un nom pour y référer. Pour y arriver il faut modifier deux fichiers.
 
 Dans `/etc/hostname`, écrivez le nom que vous voulez lui donner:
 ```
@@ -35,7 +35,7 @@ Redémarrez ensuite votre Pi.
 À cette étape, il devrait être accessible sur le réseau par son nom suivi du suffixe `.local`. Testez avec la comande _ping_:
 ```
 ping bork.local
-```
+``` -->
 
 ## Connexion par VSCode
 
