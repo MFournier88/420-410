@@ -168,3 +168,211 @@ except KeyboardInterrupt:
 nc 1.2.3.4 8888
 nc -lp 8888
 ``` 
+
+{{% expand "Solution" %}}
+client.py
+```python
+import socket
+import os
+import termios
+import sys
+
+
+def flush_input():
+    """
+    Fonction qui permet de libérer le buffer de input. Pas nécessaire selon mon énoncé, mais plus propre comme code.
+    """
+    try:
+        if os.name == 'nt':  # Windows
+            import msvcrt
+            while msvcrt.kbhit():
+                msvcrt.getch()
+        else:  # Linux / macOS
+            import termios
+            termios.tcflush(sys.stdin, termios.TCIFLUSH)
+    except ImportError:
+        # Cas rare où les modules ne sont pas dispo
+        pass
+    
+PORT = 8887
+DEST_IP = "127.0.0.1"
+BUFFER_SIZE = 1024
+MESSAGE_TOURNE = "Le moteur tourne, veuillez patienter..."
+MESSAGE_CONFIRMATION = "Mouvement terminé avec succès."
+MESSAGE_ERREUR = "Une erreur est survenue, veuillez réessayer"
+MESSAGE_CLOSE = "Déconnecté"
+
+# Create the socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Initialize the destination address
+dest_addr = (DEST_IP, PORT)
+
+
+
+try:
+    # Create the connection
+    sock.connect(dest_addr)
+    print("--- Contrôle du Stepper ---")
+    connected = True
+    while connected:
+        flush_input()
+        message = input("\nEntrez l'angle souhaité : ")
+        print("")
+        # Send the message and close the connection
+        sock.send(message.encode())
+
+        msgServeur  = sock.recv(BUFFER_SIZE).decode()
+        print(f"Reçu : {msgServeur}")
+        if not msgServeur or msgServeur == MESSAGE_CLOSE:
+            print("Déconnecté")
+            break
+        if msgServeur == MESSAGE_ERREUR:
+            print(f"[SERVEUR] : {MESSAGE_ERREUR}")
+            continue
+
+        if msgServeur == MESSAGE_TOURNE:
+            print(f"[SERVEUR] : {MESSAGE_TOURNE}")
+
+            while True:
+                confirmation = sock.recv(BUFFER_SIZE).decode()
+                if not confirmation or confirmation == MESSAGE_CLOSE:
+                    print("Déconnecté")
+                    connected = False
+                    break
+                if confirmation == MESSAGE_ERREUR:
+                    print(f"[SERVEUR] : {MESSAGE_ERREUR}")
+                    break
+                if confirmation == MESSAGE_CONFIRMATION:
+                    print(f"[SERVEUR] : {MESSAGE_CONFIRMATION}")
+                    break
+            if not connected:
+                break
+            
+except KeyboardInterrupt:
+    pass
+finally:
+    sock.close()
+```
+
+serveur.py
+```python
+import socket
+import pigpio
+import time
+
+"""
+1. Test le matériel
+2. Test la connexion
+3. Ajoute le moteur dans le fichier serveur juste pour tourner un tour
+4. Everything!
+5. Assurer que le code ne brise pas 
+"""
+
+# Constantes pour le serveur
+PORT = 8887
+BUFFER_SIZE = 1024
+MESSAGE_TOURNE = "Le moteur tourne, veuillez patienter..."
+MESSAGE_CONFIRMATION = "Mouvement terminé avec succès."
+MESSAGE_ERREUR = "Une erreur est survenue, veuillez réessayer"
+MESSAGE_CLOSE = "Déconnecté"
+# Constantes pour le moteur
+M1,M2,M3,M4 = 26,13,19,6
+STEP_PAR_TOUR = 2048
+
+#######    Set-up Moteur    #######
+# Vitesse moteur : Minimum recommandé: 2ms (0.002)
+step_pause = 0.002
+
+# Séquence "Full-step" = plus de couple 
+seq_anti_horaire= [
+    [1,0,0,1],
+    [1,1,0,0],
+    [0,1,1,0],
+    [0,0,1,1]
+]
+
+seq_horaire = seq_anti_horaire.copy()
+seq_horaire.reverse()
+
+def stop_moteur():
+    pi.write(M1, 0)
+    pi.write(M2, 0)
+    pi.write(M3, 0)
+    pi.write(M4, 0)
+
+pi = pigpio.pi()
+
+pi.set_mode(M1,pigpio.OUTPUT)
+pi.set_mode(M2,pigpio.OUTPUT)
+pi.set_mode(M3,pigpio.OUTPUT)
+pi.set_mode(M4,pigpio.OUTPUT)
+
+######    Set-up Socket    #######
+socket_local = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+address = ('', PORT)  
+socket_local.bind(address)
+socket_local.listen(3)
+print(f"Serveur TCP en écoute au port {PORT}...")
+
+
+#####     Fct      #######
+
+def controle_moteur(angle, seq):
+    compteur_pas = 0
+    pas_a_faire = angle * STEP_PAR_TOUR / 360
+    while compteur_pas < pas_a_faire:
+            for step in seq: # Changez la séquence ici au besoin
+                # Activer chacune des 4 bobines
+                pi.write(M1, step[0])
+                pi.write(M2, step[1])
+                pi.write(M3, step[2])
+                pi.write(M4, step[3])
+
+                # La durée de la pause détermine la vitesse
+                time.sleep(step_pause)
+                compteur_pas += 1
+
+
+# Attente de connexion
+socket_dist, client_address = socket_local.accept()
+print(f"Socket distant: {client_address}")
+
+
+
+try:
+    # Réception des messages
+    while True:
+        # Données
+        data = socket_dist.recv(BUFFER_SIZE)
+        if not data:
+            print("Déconnecté")
+            break
+        
+        # Décoder + afficher les message
+        message = data.decode().strip()
+        # Filtre le message
+        try:
+            angle = int(message)
+            if angle < 0: continue
+        except:
+            socket_dist.send(MESSAGE_ERREUR.encode())
+            continue   
+
+        socket_dist.send(MESSAGE_TOURNE.encode())
+        
+        if angle % 2 == 0: 
+            seq = seq_anti_horaire
+        else:
+            seq = seq_horaire
+        controle_moteur(angle, seq)
+        socket_dist.send(MESSAGE_CONFIRMATION.encode())
+
+except KeyboardInterrupt:
+    socket_dist.send(MESSAGE_CLOSE.encode())
+    time.sleep(1)
+finally:
+    socket_dist.close()
+    socket_local.close()
+```
+{{% /expand %}}
