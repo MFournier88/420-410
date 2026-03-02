@@ -5,6 +5,15 @@ draft = false
 weight = 62
 +++
 
+
+# Préparation
+
+```bash
+sudo sdptool add SP
+sudo rfkill unblock bluetooth
+sudo hciconfig hci0 up
+```
+
 _Bluetooth_ a été inventé pour remplacer les câbles qu'on utilisait pour connecter les appareils et leurs périphériques, comme par exemple les écouteurs, les souris ou les manettes de jeu. 
 
 Il est basé sur une architecture client-serveur, mais permet seulement une communication de 1 à 1 entre deux composantes: les multiples clients d'un même serveur ne peuvent pas utiliser bluetooth pour communiquer entre eux.
@@ -98,8 +107,12 @@ La référence: https://bluedot.readthedocs.io/en/latest/index.html
 Pour installer la partie client sur un téléphone Android, allez sur le Google Store.
 
 #### BueDot serveur
-Pour installer la partie serveur sur votre Pi, la procédure est la suivante:
-```
+# Créez venv
+python3 -m venv venv
+source venv/bin/activate
+
+# Dans la venv
+pip install pigpio
 sudo apt-get install libdbus-glib-1-dev libdbus-1-dev
 pip3 install dbus-python
 pip3 install bluedot
@@ -126,6 +139,54 @@ pip3 install pygame
 ```
 
 > ATTENTION: La partie _serveur_ du programme doit s'exécuter avant que la partie client essaie de se connecter.
+
+---
+
+## Connexion entre deux Raspberry Pi
+
+Pour faire communiquer deux Raspberry Pi, l'un doit agir comme **périphérique détectable** (Pi 1) et l'autre comme **initiateur** de la connexion (Pi 2).
+
+### 1. Préparation du Pi 1 (Serveur/Cible)
+
+Sur le premier Pi, ouvrez `bluetoothctl` et rendez-le visible sur le réseau :
+
+```bash
+# Dans bluetoothctl
+power on
+discoverable on
+pairable on
+
+```
+
+### 2. Configuration du Pi 2 (Client/Initiateur)
+
+Sur le second Pi, vous allez rechercher le Pi 1 et établir le lien de confiance. Remplacez `[MAC_PI_1]` par l'adresse physique affichée lors du scan.
+
+```bash
+# Dans bluetoothctl
+scan on
+# Attendez de voir apparaître l'adresse MAC du Pi 1
+trust [MAC_PI_1]
+pair [MAC_PI_1]
+scan off
+
+```
+
+### 3. Finalisation du lien
+
+Une fois que le Pi 2 a initié l'appairage, retournez sur le **Pi 1** pour accepter la demande et confirmer le lien de confiance réciproque :
+
+```bash
+# Dans bluetoothctl sur Pi 1
+trust [MAC_PI_2]
+
+```
+
+> **Note :** Une fois ces étapes terminées, les deux appareils se reconnaîtront automatiquement. Vous pourrez alors utiliser les bibliothèques comme `bluedot.btcomm` (présentée ci-dessous) pour envoyer des données sans avoir à répéter ces manipulations.
+
+---
+
+**Souhaites-tu que je reformule également les exercices pour qu'ils incluent des conseils spécifiques sur la gestion des adresses MAC entre les deux Pi ?**
 
 ### _btcomm_
 BlueDot permet aussi d'échanger des données entre deux programmes via la connexion bluetooth. Il faut cependant que les deux périphériques soient déjà appariés. Ensuite les deux programmes peuvent facilement établir une connexion client-serveur similaire à une connexion TCP: le serveur attend une connexion, le client se connecte. 
