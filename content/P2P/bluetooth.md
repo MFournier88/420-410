@@ -108,10 +108,13 @@ Pour installer la partie client sur un téléphone Android, allez sur le Google 
 
 #### BueDot serveur
 # Créez venv
+```bash
 python3 -m venv venv
 source venv/bin/activate
+```
 
 # Dans la venv
+```bash
 pip install pigpio
 sudo apt-get install libdbus-glib-1-dev libdbus-1-dev
 pip3 install dbus-python
