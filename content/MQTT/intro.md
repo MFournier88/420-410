@@ -91,7 +91,7 @@ mosquitto_pub -h BROKER -t TOPIC -m MESSAGE
 ```
 Par exemple:
 ```bash
-mosquitto_pub -f 10.10.10.22 -t "meteo" -m "Il neige"
+mosquitto_pub -h 10.10.10.22 -t "meteo" -m "Il neige"
 ```
 
 Pour choisir la QoS, ajouter l'option `-q 0`, `-q 1`ou `-q 2`
