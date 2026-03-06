@@ -82,6 +82,8 @@ Par exemple, si l'adresse du _broker_ est `10.10.10.22` et le sujet est `meteo`,
 mosquitto_sub -h 10.10.10.22 -t "meteo"
 ```
 
+Vous pouvez ajouter l'option `-v` si vous voulez savoir de quel topic provient le message que vous recevez.
+
 ##### mosquitto_pub
 Pour publier un message dans une rubrique donnée. La syntaxe de la commande est:
 ```
@@ -91,6 +93,8 @@ Par exemple:
 ```bash
 mosquitto_pub -f 10.10.10.22 -t "meteo" -m "Il neige"
 ```
+
+Pour choisir la QoS, ajouter l'option `-q 0`, `-q 1`ou `-q 2`
 
 #### Authentification
 MQTT supporte des fonctionnalités d'authentification. Lorsqu'on les active, tous les clients devront fournir un identifiant et un mot de passe à l'agent au moment de la connexion.

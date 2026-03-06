@@ -86,18 +86,7 @@ Ensuite vous devriez voir votre Pi parmi les périphériques accessibles sur vot
 Request confirmation
 [agent] Confirm passkey 375299 (yes/no): yes
 ```
-<!--
-Faire les commandes:
 
-devices : voir les paired
-info : voir les infos du device
-disconnect
-devices : voir les paired
-connect MAC: voir qu'il faut confirmer
-disconnect
-trust MAC
-connect : voir qu'on n'a plus besoin de confirmer
--->
 
 ## BlueDot
 BlueDot est une application Android assortie d'une librairie qui permet de facilement contrôler des programmes python sur des périphériques bluetooth. L'application existe aussi au format graphique sur RaspberryPi.
@@ -124,6 +113,7 @@ pip3 install bluedot
 Le programme suivant affiche "bonjour" sur la console du Pi chaque fois que le bouton est appuyé dans l'application Android:
 ```python
 from bluedot import BlueDot
+from signal import pause
 
 def bonjour():
 	print("bonjour")
@@ -131,17 +121,16 @@ def bonjour():
 bd = BlueDot()
 bd.when_pressed = bonjour
 
-while True:
-	pass
+pause()
 ```
 
 #### BlueDot client
-Pour installer la partie client sur votre Pi, vous devez installer la librairie *PyGame*. La commande est celle-ci:
+<!-- Pour installer la partie client sur votre Pi, vous devez installer la librairie *PyGame*. La commande est celle-ci:
 ```
 pip3 install pygame
 ```
 
-> ATTENTION: La partie _serveur_ du programme doit s'exécuter avant que la partie client essaie de se connecter.
+> ATTENTION: La partie _serveur_ du programme doit s'exécuter avant que la partie client essaie de se connecter. -->
 
 ---
 
@@ -185,11 +174,9 @@ trust [MAC_PI_2]
 
 ```
 
-> **Note :** Une fois ces étapes terminées, les deux appareils se reconnaîtront automatiquement. Vous pourrez alors utiliser les bibliothèques comme `bluedot.btcomm` (présentée ci-dessous) pour envoyer des données sans avoir à répéter ces manipulations.
+> **Note :** Une fois ces étapes terminées, les deux appareils se reconnaîtront automatiquement. Vous pourrez alors utiliser les bibliothèques comme `bluedot.btcomm` (présentée ci-dessous) pour envoyer des données sans avoir à répéter ces manipulations. `Pour confirmer la réussite de cette étape, il faut voir l'autre Pi dans *devices* à partir de bluetoothctl`
 
 ---
-
-**Souhaites-tu que je reformule également les exercices pour qu'ils incluent des conseils spécifiques sur la gestion des adresses MAC entre les deux Pi ?**
 
 ### _btcomm_
 BlueDot permet aussi d'échanger des données entre deux programmes via la connexion bluetooth. Il faut cependant que les deux périphériques soient déjà appariés. Ensuite les deux programmes peuvent facilement établir une connexion client-serveur similaire à une connexion TCP: le serveur attend une connexion, le client se connecte. 
@@ -199,6 +186,7 @@ Pour se faire on utilise les classes _BluetoothClient_ et _BluetoothServer_. Les
 ##### BluetoothServer
 ```python
 from bluedot.btcomm import BluetoothServer
+from signal import pause
 
 # Fonction de rappel pour le traitement des messages entrants
 def reception(donnees):
@@ -207,14 +195,13 @@ def reception(donnees):
 # On instancie le serveur
 srv = BluetoothServer(reception)
 
-while True:
-    pass
+pause()
 ```
 
 ##### BluetoothClient
 ```python
 from bluedot.btcomm import BluetoothClient
-
+from signal import pause
 # L'adresse MAC du serveur
 SERVEUR = "E4:5F:01:EC:63:4E"
 
@@ -224,8 +211,7 @@ def reception(data):
 c = BluetoothClient(SERVEUR, reception)
 c.send("bonjour")
 
-while True:
-    pass
+pause()
 ```
 
 ## Exercices
@@ -234,6 +220,7 @@ while True:
 ```python
 from bluedot import BlueDot
 import pigpio
+from signal import pause
 
 LED = 26
 
@@ -246,8 +233,7 @@ def allume():
 bd = BlueDot()
 bd.when_pressed = allume
 
-while True:
-	pass
+pause()
 ```
 {{% /expand %}}
 2. Dans l'exercice précédent, la LED ne s'éteint pas lorsqu'on relâche le bouton. Modifiez votre programme pour que ce soit le cas. Consultez la documentation pour savoir quel évènement utiliser.
@@ -255,6 +241,7 @@ while True:
 ```python
 from bluedot import BlueDot
 import pigpio
+from signal import pause
 
 LED = 26
 
@@ -271,8 +258,7 @@ bd = BlueDot()
 bd.when_pressed = allume
 bd.when_released = eteint
 
-while True:
-	pass
+pause()
 ```
 {{% /expand %}}
 3. Faites un programme qui affiche 3 boutons sur l'appli BlueDot (rouge, vert et bleu) et allume les couleurs correspondantes sur une LED RGB.
@@ -280,6 +266,7 @@ while True:
 ```python
 from bluedot import BlueDot
 import pigpio
+from signal import pause
 
 R,G,B = 26,19,13
 
@@ -316,11 +303,10 @@ pi.set_mode(R,pigpio.OUTPUT)
 pi.set_mode(G,pigpio.OUTPUT)
 pi.set_mode(B,pigpio.OUTPUT)
 
-while True:
-	try:
-        pass
-    except KeyboardInterrupt:
-        eteindre()
+try:
+    pause()
+except KeyboardInterrupt:
+    eteindre()
 ```
 {{% /expand %}}
 4. Avec une autre équipe, établissez une connexion bluetooth pour vous échanger des messages texte. Inversez ensuite les rôles de client et serveur.

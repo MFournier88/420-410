@@ -16,31 +16,10 @@ Pour installer _paho-mqtt_, lancez la commande suivante dans votre environnement
 (code) prof@fruit:~/code $ pip install paho-mqtt
 ```
 
-#### Publier un message
-```python
-import paho.mqtt.client as pmc
-
-BROKER = "mqttbroker.lan"
-PORT = 1883
-TOPIC = "test"
-
-def connexion(client, userdata, flags, code, properties):
-    if code == 0:
-        print("Connecté")
-    else:
-        print("Erreur code %d\n", code)
-
-client = pmc.Client(pmc.CallbackAPIVersion.VERSION2)
-client.on_connect = connexion
-
-client.connect(BROKER,PORT)
-client.publish(TOPIC,"allo")
-client.disconnect()
-```
 
 Dans le programme précédent, la fonction `connexion` définit ce que le programme fait lors de la connexion au _broker_. Dans ce cas-ci, on affiche un message de succès / erreur. Notez que la fonction doit être associée à la propriété `on_connect` du client pour être appelée, et comme elle est appelée de manière asynchrone, il faut appeler la méthode `loop_start()` immédiatement après pour que la connexion se fasse dans son propre *thread*.
 
-#### Recevoir des messages
+#### Code
 
 ```python
 import paho.mqtt.client as pmc
@@ -63,7 +42,13 @@ client.on_connect = connexion
 client.on_message = reception_msg
 
 client.connect(BROKER,PORT)
+
+# Si je veux m'abonner je fais ceci
 client.subscribe(TOPIC)
+
+# Si je veux publier je fais ceci
+client.publish(TOPIC,"allo")
+
 client.loop_forever()
 ```
 Dans cet exemple, on définit dans la fonction `reception_msg` ce qui doit être fait lorsqu'un message est reçu. Ici on ne fait qu'écrire le message à l'écran.
@@ -247,7 +232,7 @@ Max: Equipe 3 (72)
 Moy: 34.20
 -------------
 ```
-{{% expand "ex4_pub" %}}
+<!-- {{% expand "ex4_pub" %}}
 ```python
 import paho.mqtt.client as pmc
 import pigpio
@@ -366,7 +351,7 @@ except KeyboardInterrupt:
     client.disconnect()
 
 ```
-{{% /expand %}}
+{{% /expand %}} -->
 
 1. Configurez un _broker_ pour qu'il contienne l'utilisateur `info` et le mot de passe `Password1234`. Ensuite faites un programme qui envoit un message au _topic_ "exercice5" lorsque l'utilisateur clique un bouton. Le message doit être envoyé avec QoS de niveau 2 et afficher "Message envoyé" à l'évènement `on_publish`.
 <!--
