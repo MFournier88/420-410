@@ -1,8 +1,8 @@
 +++
 archetype = "chapter"
-title = "MQTT"
-weight = 6
-pre = "6. "
+pre = "5. "
+title = "Bluetooth"
+weight = 5
 draft = false
 +++
 

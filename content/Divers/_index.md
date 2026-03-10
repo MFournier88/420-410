@@ -1,9 +1,9 @@
 +++
 title = "Divers"
 type = "chapter"
-weight = 7
+weight = 10
 draft = false
-pre = "7. "
+pre = "10. "
 +++
 
 # Random
