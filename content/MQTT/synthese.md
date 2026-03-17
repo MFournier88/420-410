@@ -60,4 +60,4 @@ Le Pi B doit s'abonner au topic `maison/eclairage/commande` d'un broker que vous
 ---
 
 
-![alt text](./image.png)
+![alt text](/420-410/images/formatif-grille.png)
