@@ -174,6 +174,60 @@ trust [MAC_PI_2]
 
 ```
 
+Voici une version reformulée, plus claire et structurée de vos notes de cours pour faciliter le dépannage de la connexion entre deux Raspberry Pi.
+
+---
+
+## 4. Guide de dépannage : Que faire si la connexion échoue ?
+
+Avant de tout réinitialiser, vérifiez si vos deux Raspberry Pi sont déjà appairés. Utilisez la commande suivante pour lister les périphériques connus :
+
+```bash
+devices
+```
+
+* **Si l'autre Pi apparaît dans la liste :** Tentez directement d'exécuter votre code de communication.
+* **Si l'autre Pi est absent ou si l'envoi de messages échoue :** Suivez la procédure de réinitialisation ci-dessous.
+
+### Procédure de réinitialisation (étape par étape)
+
+Si la connexion Bluetooth semble établie mais que les données ne transitent pas, suivez cet ordre précis :
+
+1.  **Redémarrer le service :** Relancez le démon Bluetooth pour vider le cache temporaire.
+    ```bash
+    sudo systemctl restart bluetooth
+    ```
+    *Vérifiez si cela règle le problème. Si non, passez à l'étape suivante.*
+
+2.  **Nettoyer l'environnement :** Parfois, le problème vient des dépendances Python. Supprimez et réinstallez votre environnement virtuel.
+    ```bash
+    sudo rm -rf venv
+    ```
+
+3.  **Oublier l'appareil :** Entrez dans l'utilitaire Bluetooth pour supprimer manuellement l'ancien appairage.
+    ```bash
+    sudo bluetoothctl
+    # Une fois dans l'interface :
+    remove [ADRESSE_MAC_DU_PI_DISTANT]
+    exit
+    ```
+
+4.  **Réinitialisation finale :** Redémarrez une dernière fois le service après avoir supprimé l'appareil.
+    ```bash
+    sudo systemctl restart bluetooth
+    ```
+
+5.  **Nouvelle tentative :** Reprenez le processus d'appairage depuis le début.
+
+> [!IMPORTANT]
+> **Dernier recours :** Si après avoir suivi toutes ces étapes la communication est toujours impossible, levez la main pour demander l'assistance de votre enseignant.
+
+---
+
+
+
+
+
 > **Note :** Une fois ces étapes terminées, les deux appareils se reconnaîtront automatiquement. Vous pourrez alors utiliser les bibliothèques comme `bluedot.btcomm` (présentée ci-dessous) pour envoyer des données sans avoir à répéter ces manipulations. `Pour confirmer la réussite de cette étape, il faut voir l'autre Pi dans *devices* à partir de bluetoothctl`
 
 ---

@@ -2,9 +2,8 @@
 title = 'Écrans LCD'
 date = 2025-04-24T20:41:58-04:00
 draft = false
-weight = 71
+weight = 1002
 +++
-
 L'écran *LCD 0802* du kit *KS0522* Est compatible avec plusieurs modules python pour le RaspberryPi. Ici nous utiliserons **Adafruit CharLCD**. Une référence est disponible ici: https://docs.circuitpython.org/projects/charlcd/en/latest/index.html.
 
 Tout d'abord il faut installer le paquet logiciel correspondant avec la commande suivante sur le Pi:
