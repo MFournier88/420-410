@@ -8,26 +8,24 @@ weight = 53
 ## Installation
 Pour installer un _broker_ MQTT dans linux, il suffit d'installer le paquet _mosquitto_. Dans les distributions basées sur _Debian_ la commande est celle-ci:
 ```
-sudo apt install mosquitto
+apt install mosquitto
 ```
 
 Il est recommandé de créer un fichier de configuration avec vos propres paramètres. 
 ```
-mosquitto -c /etc/mosquitto/mosquitto.conf
-sudo chown -R mosquitto:mosquitto /var/log/mosquitto
-sudo chmod -R 755 /var/log/mosquitto
+nano /etc/mosquitto/mosquitto.conf
+chmod -R 755 /etc/mosquitto/mosquitto.conf
+chown -R mosquitto:mosquitto /var/log/mosquitto
+chmod -R 755 /var/log/mosquitto
 ```
-sudo nano /etc/mosquitto/mosquitto.conf
+
+Mettre ceci dans le fichier de config `/etc/mosquitto/mosquitto.conf`
 ```
 persistence true
 persistence_location /var/lib/mosquitto/
 log_dest file /var/log/mosquitto/mosquitto.log
 allow_anonymous true
 listener 1883
-```
-
-```bash
-sudo chmod 755 /etc/mosquitto/users
 ```
 
 La première ligne spécifique que le port 1883 (port TCP standard pour MQTT) doit être utilisé par le programme. La deuxième ligne permet aux clients d'utiliser le _broker_ sans avoir à s'authentifier.
@@ -38,12 +36,12 @@ En cas d'erreur, utiliser ce code pour avoir un message d'erreur détaillé:
 mosquitto -c /etc/mosquitto/mosquitto.conf
 ```
 ```bash
-sudo killall mosquitto
+killall mosquitto
 ```
 Dès que vous apporté des modification à la configuration, faites un :
 
 ```bash
-sudo systemctl restart mosquitto
+systemctl restart mosquitto
 ```
 ## Configurer l'authentification
 C'est la configuration de l'agent ("broker") qui détermine si les clients doivent s'authentifier ou non. Dans le fichier de configuration du _broker_, la variable `allow_anonymous` doit être à `false`, et `password_file` doit indiquer le fichier qui contient les identifiants et mots de passe. Par exemple:
@@ -58,4 +56,9 @@ La commande `mosquitto_passwd` permet de gérer les identifiants de connexion. O
 - `mosquitto_passwd -D FICHIER UTILISATEUR` : Supprime l'utilisateur.
 - `mosquitto_passwd -c FICHIER UTILISATEUR` : Crée le fichier des utilisateurs et y ajoute un utilisateur. Attention, si le fichier existe déjà il sera écrasé.
 
+
+```bash
+chmod 755 /etc/mosquitto/users
+systemctl restart mosquitto
+```
 
