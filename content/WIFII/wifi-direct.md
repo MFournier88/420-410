@@ -5,110 +5,164 @@ draft = false
 weight = 61
 +++
 
-Une manière simple d'établir une connexion P2P entre deux Pi est d'en configurer un pour être un point d'accès. Il suffit ensuite qu'un autre Pi (ou un PC, ou un téléphone) se connecte au réseau créé par le point d'accès. Le gestionnaire de connexions *NetworkManager* déjà installé sur le Pi est l'utilitaire qui permet cette configuration.
+---
 
-Attention, le Pi qui devient un point d'accès ne peut donc plus accéder à internet par wifi.
+# 🛰️ Guide Complet : Réseau Privé P2P entre Raspberry Pi
 
-Aussi, il est toujours utile d'avoir le service DHCP actif sur un réseau: ceci permet d'éviter aux clients de définir leur propre adresse IP statique. Pour cela nous installerons le service *dnsmasq*. 
+Ce guide permet d'établir une connexion directe entre deux Raspberry Pi (AP Mode) pour échanger des données via Sockets Python, sans dépendre d'un routeur externe.
 
-Il faudra également donner une adresse IP statique au Pi qui sera le point d'accès.
+## 1. Architecture du réseau
+Remplacer XXX par le numéro de votre (Pi + 100)
+* **Pi A (Serveur/Point d'Accès) :** Crée le Wi-Fi. IP Statique : `192.168.XXX.1`.
+* **Pi B (Client) :** Se connecte au Pi A. IP Dynamique (DHCP) : `192.168.XXX.10` à `100`.
+* **Note sur l'IP :** Le sous-réseau `50.x` évite les conflits avec les box internet standards (souvent en `1.x` ou `0.x`).
 
-## Configuration *NetworkManager*
-Certains paramètres de *NetworkManager* sont différents selon qu'on soit client wifi ou point d'accès. Il faut donc modifier la configuration de ce service.
+---
 
-#### Modification du fichier de configuration
-Pour ne pas perdre la configuration client, faites une copie du fichier de configuration général:
+## 2. Configuration du Serveur (Pi A)
+
+### A. NetworkManager (Interface Radio)
+On configure le Pi pour diffuser un signal Wi-Fi.
 ```bash
+# 1. Sauvegarde et configuration de base
 sudo cp /etc/NetworkManager/NetworkManager.conf /etc/NetworkManager/NetworkManager.conf.sauv
-```
-Ensuite modifiez `/etc/NetworkManager/NetworkManager.conf` pour qu'il contienne les valeurs suivantes:
-```conf
-[main]
-plugins=keyfile
-dns=none
+# Modifier /etc/NetworkManager/NetworkManager.conf : [main] plugins=keyfile, dns=none | [ifupdown] managed=true
 
-[ifupdown]
-managed=true
-```
+# 2. Création du point d'accès
+nmcli connection add type wifi ifname wlan0 mode ap con-name [NOM_PROFIL] ssid [SSID_DU_RESEAU]
 
-#### Création du point d'accès
-La configuration de *NetworkManager* se fait à l'aide de l'utilitaire `nmcli`. Il y a plusieurs paramètres à définir et ils sont passés comme arguments à la commande.
+# 3. Paramètres de sécurité et IP statique
+sudo nmcli connection modify [NOM_PROFIL] 802-11-wireless.band bg
+sudo nmcli connection modify [NOM_PROFIL] 802-11-wireless.channel 6
+sudo nmcli connection modify [NOM_PROFIL] wifi-sec.key-mgmt wpa-psk
+sudo nmcli connection modify [NOM_PROFIL] wifi-sec.psk "votre_mot_de_passe"
+sudo nmcli connection modify [NOM_PROFIL] ipv4.method manual ipv4.addresses 192.168.XXX.1/24
 
-Pour créer la connection (remplacez les valeurs entre crochets par les vôtres):
-```bash {wrap="false"}
-nmcli connection add type wifi ifname wlan0 mode ap con-name [NOM_CONNEXION] ssid [NOM_RÉSEAU_WIFI]
-```
-> Si la connexion a été créée, la commande `nmcli connection show` devrait l'afficher parmi toutes les connexions existantes.
-
-Il faut ensuite définir les paramètres de la connexion avec `nmcli connection modify...`:
-```bash
-sudo nmcli connection modify [NOM_CONNEXION] 802-11-wireless.band bg
-sudo nmcli connection modify [NOM_CONNEXION] 802-11-wireless.channel 6
-sudo nmcli connection modify [NOM_CONNEXION] wifi-sec.key-mgmt wpa-psk
-sudo nmcli connection modify [NOM_CONNEXION] wifi-sec.psk "abcd-1234"
-```
-> Suite à ces commandes, un fichier portant le nom de la connexion devrait avoir été créé dans le répertoire `/etc/NetworkManager/system-connections`.
-
-#### Définition de l'adresse IP
-Pour donner une adresse IP statique au point d'accès, la commande est celle-ci:
-```bash
-nmcli connection modify [NOM_CONNEXION] ipv4.method manual ipv4.addresses [ADRESSE/MASQUE]
-```
-<!--
-Ces deux lignes semblent inutiles:
-sudo nmcli connection modify ap_fruit ipv4.gateway 10.10.1.1
-sudo nmcli connection modify ap_fruit ipv4.dns 8.8.8.8
--->
-
-## Configuration du service DHCP
-Le service *dnsmasq* est très léger et permet de remplir des fonctionnalités de cache DNS et de serveur DHCP de base. Nous allons donc l'utiliser.
-
-#### Installation
-```bash
-sudo apt update
-sudo apt install dnsmasq
+# 4. Activation
+sudo nmcli connection up [NOM_PROFIL]
 ```
 
-#### Définition de la plage d'adresses
-Il faut définir principalement deux paramètres: la **plage d'adresses** dans lesquelles le serveur peut sélectionner les adresses qu'il distribue, et l'**interface** sur laquelle il doit attendre les requêtes DHCP.
-
-Il faut donc créer un fichier qui contient ces informations; nous lui donnerons le même nom que la connexion. Créez donc le fichier `/etc/dnsmasq.d/[NOM_CONNEXION].conf` et mettez-y le contenu suivant:
+### B. DHCP avec `dnsmasq` (Attribution des IP)
+Permet aux clients de recevoir une adresse automatiquement.
+1.  **Installation :** `sudo apt install dnsmasq`
+2.  **Configuration :** Créer `/etc/dnsmasq.d/[NOM_PROFIL].conf` :
 ```conf
 interface=wlan0
-dhcp-range=[ADRESSE_IP_MIN],[ADRESSE_IP_MAX],12h
+dhcp-range=192.168.XXX.10,192.168.XXX.100,12h
 domain-needed
 bogus-priv
+port=0
 ```
+3.  **Démarrage :** `sudo systemctl restart dnsmasq`
 
-## Activation du point d'accès
-Tous les services sont maintenant configurés, il reste donc à les (re)démarrer. 
+---
 
-La premère étape est d'arrêter la connexion *wifi client*:
+## 3. Configuration du Client (Pi B)
+
+### A. Connexion au réseau
 ```bash
-sudo nmcli connection down preconfigured
+# 1. Configurer le pays (Crucial pour débloquer les fréquences)
+sudo raspi-config # Localisation Options -> WLAN Country -> CA ou FR
+
+# 2. Scanner et se connecter
+nmcli device wifi list
+sudo nmcli device wifi connect "[SSID_DU_RESEAU]" password "[MOT_DE_PASSE]"
+
+# 3. Vérification
+nmcli device status # wlan0 doit être "connected"
+
+sudo nmcli radio wifi on
+
+sudo rfkill unblock wifi
+
+sudo ip link set wlan0 up
+
+nmcli device status # wlan0 doit être "connected"
+
 ```
 
-Ensuite on démarre le connexion *point d'accès* (il est probable qu'elle démarre toute seule):
+---
+
+## 4. Partage de données (Python Sockets)
+
+### Protocole UDP (Rapide, sans connexion)
+* **Serveur (Pi A) :**
+```python
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.bind(('', 8888)) # Écoute sur le port 8888
+while True:
+    data, addr = s.recvfrom(1024)
+    print(f"Reçu de {addr} : {data.decode()}")
+```
+* **Client (Pi B) :**
+```python
+import socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.sendto(b"Hello Pi A", ("192.168.XXX.1", 8888))
+```
+
+---
+
+## 5. Diagnostic et "Quick Fix"
+
+### Forcer le trafic vers le Wi-Fi (si l'Ethernet bloque)
+Si le Pi tente d'envoyer les données par le câble au lieu du Wi-Fi :
 ```bash
-sudo nmcli connection up [NOM_CONNEXION]
+sudo ip route add 192.168.XXX.0/24 dev wlan0 metric 10
 ```
 
-Enfin on démarre le service DHCP:
-```bash
-sudo systemctl restart dnsmasq
-```
+### Commandes de vérification
+* `rfkill list` : Vérifier que le Wi-Fi n'est pas bloqué logiciellement (`Soft blocked: no`).
+* `nmcli radio wifi on` : Forcer l'activation de la puce Wi-Fi.
+* `ping 192.168.XXX.1` : Test ultime de connectivité.
+* `nc -ulp 8888` : Simuler un serveur UDP pour tester la réception sans code Python.
 
-## Désactivation du point d'accès
-Pour arrêter le point d'accès et revenir à un état de client wifi, les étapes inverses doivent être réalisées, soit:
-- Revenir au fichier de configuration d'origine de *NetworkManager*
-- Désactiver la connexion du point d'accès
-- Réactiver la connexion de client wifi
+---
 
-Les commandes sont les suivantes:
-```bash {wrap="false"}
-sudo cp /etc/NetworkManager/NetworkManager.conf /etc/NetworkManager/NetworkManager.conf.point_acces
-sudo cp /etc/NetworkManager/NetworkManager.conf.sauv /etc/NetworkManager/NetworkManager.conf
-sudo nmcli connection down [NOM_CONNEXION]
-sudo nmcli connection up preconfigured
-sudo systemctl restart NetworkManager
-```
+## 6. Pourquoi ce mode plutôt que le Wi-Fi domestique ?
+
+| Avantage | Description |
+| :--- | :--- |
+| **Autonomie** | Le système fonctionne partout (robotique mobile, extérieur). |
+| **Latence** | Communication directe "circuit court", plus rapide que via une box. |
+| **Sécurité** | Réseau privé étanche, isolé des autres appareils de la maison. |
+| **Performance** | Bande passante dédiée, non partagée avec le streaming de la famille. |
+
+> **Attention :** En mode Point d'Accès, le Pi A perd son accès à Internet par Wi-Fi. Pour revenir en mode client, il faut restaurer le fichier `NetworkManager.conf` d'origine.
+
+
+# Informatif : Pourquoi 192.168
+Pour comprendre pourquoi on utilise précisément **192** et **168**, il faut descendre d'un étage et regarder comment les ordinateurs lisent ces chiffres : en **binaire** (des 0 et des 1).
+
+Voici l'explication technique, mais simplifiée, de chaque bloc :
+
+### 1. Pourquoi "192" ? (La Classe du réseau)
+Le premier nombre définit la "taille" du réseau. En binaire, **192** s'écrit `11000000`.
+
+* **La règle d'or :** Dans les années 80, on a décidé que tous les réseaux de **Classe C** (petits réseaux pour la maison ou les PME) devaient obligatoirement commencer par les bits `110`.
+* Le plus petit nombre commençant par `110` est **192**.
+* **Résultat :** Quand un Raspberry Pi voit "192", il sait immédiatement : *"Ok, je suis dans un petit réseau local, pas dans un réseau géant comme celui du gouvernement (Classe A)."*
+
+
+
+---
+
+### 2. Pourquoi "168" ? (La protection privée)
+Le deuxième nombre, **168**, est là pour la **sécurité**. 
+
+À l'époque, on avait peur de manquer d'adresses IP sur Internet. On a donc créé la norme **RFC 1918**, qui a "réservé" certains numéros pour qu'ils ne soient **jamais** utilisés sur le vrai Internet.
+* Pour la Classe C, on a réservé tout le bloc qui va de `192.168.0.0` à `192.168.255.255`.
+* **L'avantage :** Comme l'adresse `192.168.x.x` est "interdite" sur Internet, ton routeur ou ton Raspberry Pi sait que s'il reçoit un message pour cette adresse, il doit le garder pour lui et **ne jamais l'envoyer vers l'extérieur**.
+
+---
+
+### En résumé pour tes notes :
+
+| Nombre | Signification Technique | Ce que ça veut dire pour ton Pi |
+| :--- | :--- | :--- |
+| **192** | **Identifiant de Classe C** | "C'est un petit réseau local." |
+| **168** | **Extension Privée (RFC 1918)** | "C'est un réseau confidentiel, invisible d'Internet." |
+| **XXX** | **Ton numéro de projet** | "C'est le nom de ma bulle Wi-Fi spécifique." |
+| **1** | **Identifiant de la machine** | "C'est l'adresse précise du Pi A." |
+
