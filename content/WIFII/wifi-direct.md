@@ -24,6 +24,13 @@ Remplacer XXX par le numéro de votre (Pi + 100)
 ### A. NetworkManager (Interface Radio)
 On configure le Pi pour diffuser un signal Wi-Fi.
 ```bash
+
+sudo nmcli radio wifi on
+
+sudo rfkill unblock wifi
+
+sudo ip link set wlan0 up
+
 # 1. Sauvegarde et configuration de base
 sudo cp /etc/NetworkManager/NetworkManager.conf /etc/NetworkManager/NetworkManager.conf.sauv
 # Modifier /etc/NetworkManager/NetworkManager.conf : [main] plugins=keyfile, dns=none | [ifupdown] managed=true
@@ -40,6 +47,8 @@ sudo nmcli connection modify [NOM_PROFIL] ipv4.method manual ipv4.addresses 192.
 
 # 4. Activation
 sudo nmcli connection up [NOM_PROFIL]
+
+sudo systemctl restart NetworkManager
 ```
 
 ### B. DHCP avec `dnsmasq` (Attribution des IP)
@@ -61,6 +70,12 @@ port=0
 
 ### A. Connexion au réseau
 ```bash
+sudo nmcli radio wifi on
+
+sudo rfkill unblock wifi
+
+sudo ip link set wlan0 up
+
 # 1. Configurer le pays (Crucial pour débloquer les fréquences)
 sudo raspi-config # Localisation Options -> WLAN Country -> CA ou FR
 
@@ -71,36 +86,15 @@ sudo nmcli device wifi connect "[SSID_DU_RESEAU]" password "[MOT_DE_PASSE]"
 # 3. Vérification
 nmcli device status # wlan0 doit être "connected"
 
-sudo nmcli radio wifi on
 
-sudo rfkill unblock wifi
-
-sudo ip link set wlan0 up
-
-nmcli device status # wlan0 doit être "connected"
-
+sudo systemctl restart NetworkManager
 ```
 
 ---
 
 ## 4. Partage de données (Python Sockets)
 
-### Protocole UDP (Rapide, sans connexion)
-* **Serveur (Pi A) :**
-```python
-import socket
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(('', 8888)) # Écoute sur le port 8888
-while True:
-    data, addr = s.recvfrom(1024)
-    print(f"Reçu de {addr} : {data.decode()}")
-```
-* **Client (Pi B) :**
-```python
-import socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.sendto(b"Hello Pi A", ("192.168.XXX.1", 8888))
-```
+Va voir dans les notes de cours!
 
 ---
 
@@ -117,7 +111,7 @@ sudo ip route add 192.168.XXX.0/24 dev wlan0 metric 10
 * `nmcli radio wifi on` : Forcer l'activation de la puce Wi-Fi.
 * `ping 192.168.XXX.1` : Test ultime de connectivité.
 * `nc -ulp 8888` : Simuler un serveur UDP pour tester la réception sans code Python.
-
+sudo nmcli connection delete "[SSID_DU_RESEAU]"
 ---
 
 ## 6. Pourquoi ce mode plutôt que le Wi-Fi domestique ?
