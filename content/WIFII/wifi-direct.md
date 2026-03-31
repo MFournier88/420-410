@@ -34,7 +34,7 @@ sudo ip link set wlan0 up
 # 1. Sauvegarde et configuration de base
 sudo cp /etc/NetworkManager/NetworkManager.conf /etc/NetworkManager/NetworkManager.conf.sauv
 ```
-# Modifier /etc/NetworkManager/NetworkManager.conf
+### Modifier /etc/NetworkManager/NetworkManager.conf
 ```txt
 [main]
 plugins=keyfile
@@ -42,7 +42,7 @@ dns=none
 [ifupdown]
 managed=true
 ```
-
+```bash
 # 2. Création du point d'accès
 nmcli connection add type wifi ifname wlan0 mode ap con-name [NOM_PROFIL] ssid [SSID_DU_RESEAU]
 
