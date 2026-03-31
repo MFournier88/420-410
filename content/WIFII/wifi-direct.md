@@ -101,6 +101,11 @@ sudo systemctl restart NetworkManager
 ---
 
 ## 4. Partage de données (Python Sockets)
+Faites ceci pour améliorer la connexion si votre alimentation est stable.
+```bash
+sudo iw dev wlan0 set power_save off
+```
+
 
 Va voir dans les notes de cours!
 
