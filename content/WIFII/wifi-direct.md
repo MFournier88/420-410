@@ -44,7 +44,7 @@ managed=true
 ```
 ```bash
 # 2. Création du point d'accès
-nmcli connection add type wifi ifname wlan0 mode ap con-name [NOM_PROFIL] ssid [SSID_DU_RESEAU]
+sudo nmcli connection add type wifi ifname wlan0 mode ap con-name [NOM_PROFIL] ssid [SSID_DU_RESEAU]
 
 # 3. Paramètres de sécurité et IP statique
 sudo nmcli connection modify [NOM_PROFIL] 802-11-wireless.band bg

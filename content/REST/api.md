@@ -6,6 +6,9 @@ weight = 82
 +++
 
 Puisqu'on veut avoir une API, il faut définir ses points terminaux ("endpoints"). Il s'agit donc de créer les routes correspondantes et d'y ajouter le code nécessaire pour envoyer ou recevoir des données au format JSON. 
+## À Faire
+
+Vous devrez utiliser un environnement virtuel pour ce chapitre du cours.
 
 ## /info
 À titre d'exemple, nous allons créer un premier point terminal pour afficher des informations sur l'hôte, soit son nom et la date et l'heure du système. On souhaite que les données retournées aient le format suivant:
@@ -33,9 +36,17 @@ def info_hote():
   return jsonify(d)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=3000)
+    app.run(host='0.0.0.0',port=5000)
 ```
-Pour tester, ouvrez une page à cet _endpoint_; par exemple si votre Pi est à l'adresse 10.10.10.100 vous devrez ouvrir une page à `http://10.10.10.100:3000/info`.
+
+Vous pouvez lancer le code avec `python3`, mais je suggère fortement d'utiliser :
+
+```bash
+flask --app app.py --debug run --host=0.0.0.0
+```
+Cette méthodes permet le rafraichissement à chaque sauvegarde du fichier. 
+
+Pour tester, ouvrez une page à cet _endpoint_; par exemple si votre Pi est à l'adresse 10.10.10.100 vous devrez ouvrir une page à `http://10.10.10.100:5000/info`.
 
 ## Lire une valeur du GPIO
 Dans l'exemple suivant nous utilisons un bouton sur le GPIO 16 du Pi, puis le _endpoint_ `get_btn` pour lire l'état du bouton (1 ou 0). 
@@ -57,7 +68,7 @@ def get_bouton():
   return jsonify(d)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=3000)
+    app.run(host='0.0.0.0',port=5000)
 ```
 
 ## Écrire une valeur sur le GPIO
@@ -101,14 +112,14 @@ def set_led():
     return jsonify({'Etat': json["etat"]}),200
    
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=3000)
+    app.run(host='0.0.0.0',port=5000)
 ```
 ## Test
 Pour tester votre programme, il y a plusieurs possibilités.
-1. Utiliser une extension Firefox comme "postman" ou "rested" qui permet d'envoyer des appels d'API
+1. Utiliser une extension VSCode comme "postman" qui permet d'envoyer des appels d'API
 2. L'utilitaire _curl_ pour faire un appel directement d'une ligne de commande linux:
 ```
-curl -X POST http://10.10.10.100:3000/led -H "Content-Type: application/json" -d '{"etat": 1}'
+curl -X POST http://10.10.10.100:5000/led -H "Content-Type: application/json" -d '{"etat": 1}'
 ```
 3. Une page HTML simple dont le code fait les appels d'API à tester, comme l'exemple suivant:
 ```html
@@ -125,7 +136,7 @@ curl -X POST http://10.10.10.100:3000/led -H "Content-Type: application/json" -d
         async function commande(etat) {
             const statusDiv = document.getElementById('status');
             try {
-                const response = await fetch('http://10.10.10.100:3000/led', {
+                const response = await fetch('http://10.10.10.100:5000/led', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
