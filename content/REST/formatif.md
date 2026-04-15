@@ -157,7 +157,7 @@ Développez `app.py`. Le serveur doit :
 Le bouton physique doit fonctionner comme un interrupteur (Toggle) :
 * **Action :** Un clic (appui + relâchement) inverse l'état de la LED (On/Off).
 * **Mémoire :** Si on éteint la LED avec le bouton, elle doit "retenir" sa couleur précédente lorsqu'on la rallume.
-* **Rapidité :** Utilisez une **interruption** (*callback*) plutôt qu'une boucle `while`. Le système doit être capable de traiter des clics rapides (jusqu'à 10 par seconde) sans rebonds (*debounce* logiciel de 50ms recommandé).
+* **Rapidité :** Le système doit être capable de traiter des clics rapides (jusqu'à 10 par seconde) sans rebonds (*debounce* logiciel de 50ms recommandé).
 
 ### 5. Tester sur son cellulaire
 
