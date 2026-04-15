@@ -20,7 +20,7 @@ Vous avez droit à w3school pour **javascript** uniquement!
 
 ### 2. Montage Électronique (3 pts)
 * **Bouton :** Branché sur le **GPIO 17** .
-* **LED RGB :** * Rouge $\rightarrow$ **GPIO 12** | Vert $\rightarrow$ **GPIO 13** | Bleu $\rightarrow$ **GPIO 18**
+* **LED RGB :** * Rouge ➔ **GPIO 12** | Vert ➔ **GPIO 13** | Bleu ➔ **GPIO 18**
 
 ---
 
@@ -159,6 +159,25 @@ Le bouton physique doit fonctionner comme un interrupteur (Toggle) :
 * **Mémoire :** Si on éteint la LED avec le bouton, elle doit "retenir" sa couleur précédente lorsqu'on la rallume.
 * **Rapidité :** Utilisez une **interruption** (*callback*) plutôt qu'une boucle `while`. Le système doit être capable de traiter des clics rapides (jusqu'à 10 par seconde) sans rebonds (*debounce* logiciel de 50ms recommandé).
 
+### 5. Tester sur son cellulaire
+
+Tu dois rendre la page html disponible pour ton cellulaire. Tu vas faire ce code :
+
+```python
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('formatif.html') # Le fichier formatif doit être dans le dossier templates qui se trouve à la racine avec app.py
+
+if __name__ == '__main__':
+    # 0.0.0.0 makes it look for Wi-Fi and Ethernet automatically
+    app.run(host='0.0.0.0', port=5001)
+```
+
+Ensuite connecte ton cellulaire au wifi local du Pi. Puis ouvre la page **http://ip:5001**
 
 ---
 
