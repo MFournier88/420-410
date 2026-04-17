@@ -38,6 +38,9 @@ composantes électroniques
 * **Robustesse et Tolérance aux pannes** : Le système doit être conçu pour prévenir les plantages critiques. Cela inclut une gestion rigoureuse des exceptions (try/except), la reconnexion automatique en cas de perte de signal Wi-Fi, et la stabilité du code face à des données imprévues ou erronées.
 ---
 
+### **Pièces disponibles à l'école**
+
+[Site d'inventaire](https://airtable.com/app1DhJbke7rmcxYz/shrb71ct8A6K8DiNG/tblfFzkF6xNzl8Wbn)
 
 ## Livrables
 
