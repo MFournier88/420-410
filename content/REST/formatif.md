@@ -141,6 +141,10 @@ Insérez le code suivant dans la balise `<script>` de votre `index.html`. Vous d
 </body>
 </html>
 ```
+
+[Voir l'exemple de post et get ici](synthese.md)
+
+
 ---
 
 ### 4. Travail Backend 
@@ -153,6 +157,7 @@ Développez `app.py`. Le serveur doit :
     * Gérer une erreur (400) si les valeurs ne sont pas entre 0 et 255.
 3. **Route `GET /api/led_state` :** Renvoie un JSON indiquant si la LED émet de la lumière ou non (ex: `{"power": true}`).
 
+[Voir exemple de route ici](api.md)
 #### B. Logique du Bouton "Haute Performance"
 Le bouton physique doit fonctionner comme un interrupteur (Toggle) :
 * **Action :** Un clic (appui + relâchement) inverse l'état de la LED (On/Off).
