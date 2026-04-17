@@ -133,3 +133,39 @@ Les messages échangés entre l'objet et le serveur suivront ce format JSON type
 ### Schéma d'architecture
 *(N'oublie pas ton Draw.io/paint montrant les flux entre l'objet, le réseau Wi-Fi local et le serveur Web !)*
 
+---
+
+## 6. Calendrier des livrables
+
+Afin de respecter les échéances et de maximiser la récupération de points potentiels, l'équipe devra choisir son propre calendrier de développement :
+
+Exemple de calendrier:
+
+### 6.1 Livrable 1 : Fondations et Architecture (24 avril)
+* **Objectif :** Validation du concept et de la faisabilité technique.
+* **Contenu :** * Remise de la description complète (ce document).
+    * Sélection finale et réservation de l'équipement à l'école.
+
+### 6.2 Livrable 2 : Démo 1 - Connectivité et Flux Montant (1er mai)
+* **Objectif :** Établir le lien de communication de base.
+* **Éléments présentés :**
+    * **Infrastructure :** Le serveur diffuse son propre point d'accès Wi-Fi et le pi s'y connecte automatiquement.
+    * **Flux "Senseur" :** Lecture d'une valeur réelle (ou simulée sur plaque d'essai) envoyée avec succès au serveur.
+    * **Interface :** Affichage brut de la donnée reçue sur une page web simple.
+    * **Gestion d'erreurs :** Reconnexion automatique en cas de coupure de l'alimentation ou du Wi-Fi.
+    * **Flux "Contrôle" :** Un bouton sur l'interface web active physiquement un actionneur sur l'objet connecté (ex: LED ou Relais).
+
+### 6.3 Livrable 3 : Démo 2 - Contrôle et Robustesse (8 mai)
+* **Objectif :** Boucler l'interaction et stabiliser le système.
+* **Éléments présentés :**
+    * **Indicateur d'état :** Validation du signal visuel de "Prêt" (Feedback).
+    * **Logique :** Le problème principal est résolu
+
+### 6.4 Livrable 4 : Démo Finale - Produit Intégré (15 mai)
+* **Objectif :** Présentation du produit fini, esthétique et fonctionnel.
+* **Éléments présentés :**
+    * **Exécution Headless :** Le système démarre sans écran/clavier externe dès le branchement.
+    * **Code propre :** Remise du code source final (organisé, commenté et sans bogues apparents).
+    * **Expérience Utilisateur (UX) :** Interface web soignée et réactive.
+    * **Intégration physique :** Montage final propre (boîtier ou support si applicable).
+
