@@ -4,7 +4,8 @@ title = 'Introduction aux plateformes IdO'
 theme = 'relearn'
 defaultContentLanguage = "fr"
 enableEmoji = true
-
+[outputs]
+  page = ["HTML", "PRINT"]
 [params]  
   additionalCSS = ["css/custom.css"]
   disableInlineCopyToClipBoard = true
